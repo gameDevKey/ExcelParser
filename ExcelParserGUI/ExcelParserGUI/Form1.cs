@@ -16,22 +16,35 @@ namespace ExcelParserGUI
     public partial class ExcelParser : Form
     {
         private const string xlsFilter = "Excel文件|*.xls;*.xlsx";
+        private string[] exportTypeList = { "json","lua" };
+        private int exportTypeIndex = 0;
+        private string sourcePath = string.Empty;
+        private string exportPath = string.Empty;
 
         public ExcelParser()
         {
             InitializeComponent();
-            this.Text = "ExcelParser";
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            //初始化comboBox1
+            comboBox1.Items.Clear();
+            foreach (var tpe in exportTypeList)
+            {
+                comboBox1.Items.Add(tpe);
+            }
+            comboBox1.SelectedIndex = 0;
+            exportTypeIndex = comboBox1.SelectedIndex;
 
+            pathTips.Text = "(当前路径:空)";
+            exportPathTips.Text = "(导出路径:未选择)";
         }
 
         private void panel1_DragDrop(object sender, DragEventArgs e)
         {
             string path = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();       //获得路径
-            onReadExcel(path);
+            setSourcePath(path);
         }
 
         private void panel1_DragEnter(object sender, DragEventArgs e)
@@ -48,19 +61,44 @@ namespace ExcelParserGUI
             openFileDialog1.Filter = xlsFilter;
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                onReadExcel(openFileDialog1.FileName);
+                setSourcePath(openFileDialog1.FileName);
             }
         }
 
-        private void onReadExcel(string filePath)
+        private void setSourcePath(string path)
         {
-            setPathTips(filePath);
-            ExcelParserCore.Parse(filePath,"json");
+            sourcePath = path;
+            pathTips.Text = string.Format("(当前路径:{0})",sourcePath);
         }
 
-        private void setPathTips(string path)
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            pathTips.Text = "当前Excel:"+path;
+            exportTypeIndex = comboBox1.SelectedIndex;
+        }
+
+        private void exportPathBtn_Click(object sender, EventArgs e)
+        {
+            var folder = new FolderBrowserDialog();
+            if (folder.ShowDialog() == DialogResult.OK)
+            {
+                exportPath = folder.SelectedPath;
+                exportPathTips.Text = string.Format("(导出路径:{0})", exportPath);
+            }
+        }
+
+        private void exportBtn_Click(object sender, EventArgs e)
+        {
+            if(string.IsNullOrEmpty(sourcePath))
+            {
+                Utils.ShowMsg("请拖入Excel文件或点选Excel文件");
+                return;
+            }
+            if(string.IsNullOrEmpty(exportPath))
+            {
+                Utils.ShowMsg("请选择导出路径");
+                return;
+            }
+            ExcelParserCore.Parse(sourcePath, exportTypeList[exportTypeIndex], exportPath);
         }
     }
 

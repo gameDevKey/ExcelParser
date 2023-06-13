@@ -10,7 +10,7 @@ namespace ExcelParserGUI
 {
     public class ExcelParserCore
     {
-        public static void Parse(string filePath, string parseType)
+        public static void Parse(string filePath, string parseType, string exportPath)
         {
             var tpe = Config.Handlers[parseType];
             if (tpe == null)
@@ -20,6 +20,7 @@ namespace ExcelParserGUI
             }
             var cls = System.Activator.CreateInstance(tpe) as HandlerBase;
             cls.SetExcelPath(filePath);
+            cls.SetExportPath(exportPath);
             handleExcelData(filePath, cls.Handle);
         }
 

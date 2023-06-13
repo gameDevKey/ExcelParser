@@ -9,7 +9,8 @@ namespace ExcelParserGUI
     internal class HandlerBase
     {
         string excelPath;
-        string excelPathPrefix;
+        string excelName;
+        string exportPath;
         StringBuilder sb;
         string lastSheet;
         int lastRow;
@@ -24,9 +25,15 @@ namespace ExcelParserGUI
         internal void SetExcelPath(string path)
         {
             excelPath = path;
-            var paths = excelPath.Split('/');
-            paths[paths.Length - 1] = null;
-            excelPathPrefix = string.Join("/", paths);
+            var paths = excelPath.Split('\\');
+            var lastName = paths[paths.Length - 1];
+            var arr = lastName.Split('.');
+            excelName = arr[0];
+        }
+
+        internal void SetExportPath(string path)
+        {
+            exportPath = path;
         }
 
         internal void Handle(ICell cell) 
@@ -67,8 +74,7 @@ namespace ExcelParserGUI
 
         internal virtual void OnExport(ISheet sheet, string result)
         {
-            var path = excelPathPrefix+"/"+sheet.SheetName+".txt";
-            Utils.SaveFile(path, result);
+            Utils.SaveFile(exportPath+"\\"+excelName+".txt", result);
         }
     }
 }
